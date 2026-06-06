@@ -1,23 +1,15 @@
-import mongoose from 'mongoose'
-
-const poSchema = new mongoose.Schema(
-  {
-    poNumber: { type: String, unique: true },
-    rfq: { type: mongoose.Schema.Types.ObjectId, ref: 'RFQ' },
-    quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
-    vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
-    subtotal: { type: Number, required: true },
-    tax: { type: Number, required: true },
-    total: { type: Number, required: true },
-    status: { type: String, enum: ['Draft', 'Approved', 'Sent'], default: 'Draft' },
+{
+  "name": "vendorbridge",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "seed": "npm run seed --prefix backend",
+    "build": "npm run build --prefix frontend"
   },
-  { timestamps: true },
-)
-
-poSchema.pre('save', async function () {
-  if (this.poNumber) return
-  const count = await mongoose.model('PurchaseOrder').countDocuments()
-  this.poNumber = `PO-${8820 + count}`
-})
-
-export default mongoose.model('PurchaseOrder', poSchema)
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
