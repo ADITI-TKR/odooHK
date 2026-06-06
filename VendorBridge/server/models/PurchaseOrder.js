@@ -1,0 +1,23 @@
+import mongoose from 'mongoose'
+
+const poSchema = new mongoose.Schema(
+  {
+    poNumber: { type: String, unique: true },
+    rfq: { type: mongoose.Schema.Types.ObjectId, ref: 'RFQ' },
+    quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
+    vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
+    subtotal: { type: Number, required: true },
+    tax: { type: Number, required: true },
+    total: { type: Number, required: true },
+    status: { type: String, enum: ['Draft', 'Approved', 'Sent'], default: 'Draft' },
+  },
+  { timestamps: true },
+)
+
+poSchema.pre('save', async function () {
+  if (this.poNumber) return
+  const count = await mongoose.model('PurchaseOrder').countDocuments()
+  this.poNumber = `PO-${8820 + count}`
+})
+
+export default mongoose.model('PurchaseOrder', poSchema)
