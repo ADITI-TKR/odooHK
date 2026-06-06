@@ -1,16 +1,23 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VendorBridge</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+import mongoose from 'mongoose'
+
+const poSchema = new mongoose.Schema(
+  {
+    poNumber: { type: String, unique: true },
+    rfq: { type: mongoose.Schema.Types.ObjectId, ref: 'RFQ' },
+    quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
+    vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
+    subtotal: { type: Number, required: true },
+    tax: { type: Number, required: true },
+    total: { type: Number, required: true },
+    status: { type: String, enum: ['Draft', 'Approved', 'Sent'], default: 'Draft' },
+  },
+  { timestamps: true },
+)
+
+poSchema.pre('save', async function () {
+  if (this.poNumber) return
+  const count = await mongoose.model('PurchaseOrder').countDocuments()
+  this.poNumber = `PO-${8820 + count}`
+})
+
+export default mongoose.model('PurchaseOrder', poSchema)
