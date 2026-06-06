@@ -34,7 +34,7 @@ router.patch('/:id', protect, async (req, res) => {
   approval.status = status
   if (remarks) approval.remarks = remarks
   if (status === 'Approved') {
-    approval.timeline = approval.timeline.map((t) => ({
+    approval.timeline = approval.timeline.map((t, i) => ({
       ...t.toObject(),
       status: 'done',
       date: t.date === 'Awaiting' || !t.date

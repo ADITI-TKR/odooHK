@@ -1,34 +1,28 @@
 import mongoose from 'mongoose'
+import bcrypt from 'bcryptjs'
 
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: String,
-  category: String,
-  unitPrice: { type: Number, default: 0 },
-  unit: { type: String, default: 'pcs' },
-})
-
-const vendorSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
     name: { type: String, required: true },
-    companyName: { type: String, required: true },
-    companyDescription: String,
-    website: String,
-    category: { type: String, required: true },
-    gst: { type: String, required: true },
-    contact: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String },
-    address: { type: String },
-    city: String,
-    country: String,
-    products: [productSchema],
-    rating: { type: Number, default: 4.0 },
-    status: { type: String, enum: ['Active', 'Inactive', 'Pending'], default: 'Pending' },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ['procurement_officer', 'vendor', 'manager', 'admin'],
+      default: 'procurement_officer',
+    },
+    vendorProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
   },
   { timestamps: true },
 )
 
-export default mongoose.model('Vendor', vendorSchema)
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return
+  this.password = await bcrypt.hash(this.password, 10)
+})
+
+userSchema.methods.comparePassword = function (candidate) {
+  return bcrypt.compare(candidate, this.password)
+}
+
+export default mongoose.model('User', userSchema)

@@ -1,28 +1,29 @@
 import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
 
-const userSchema = new mongoose.Schema(
+const itemSchema = new mongoose.Schema({
+  name: String,
+  quantity: Number,
+  specifications: String,
+})
+
+const rfqSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: {
-      type: String,
-      enum: ['procurement_officer', 'vendor', 'manager', 'admin'],
-      default: 'procurement_officer',
-    },
-    vendorProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
+    rfqNumber: { type: String, unique: true },
+    title: { type: String, required: true },
+    category: { type: String },
+    deadline: { type: Date, required: true },
+    items: [itemSchema],
+    assignedVendors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' }],
+    status: { type: String, enum: ['Open', 'Pending', 'Closed', 'Draft'], default: 'Open' },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true },
 )
 
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return
-  this.password = await bcrypt.hash(this.password, 10)
+rfqSchema.pre('save', async function () {
+  if (this.rfqNumber) return
+  const count = await mongoose.model('RFQ').countDocuments()
+  this.rfqNumber = `RFQ-${1040 + count}`
 })
 
-userSchema.methods.comparePassword = function (candidate) {
-  return bcrypt.compare(candidate, this.password)
-}
-
-export default mongoose.model('User', userSchema)
+export default mongoose.model('RFQ', rfqSchema)
