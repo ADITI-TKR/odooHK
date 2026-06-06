@@ -1,3 +1,0 @@
-MONGODB_URI=mongodb://localhost:27017/vendorbridge
-JWT_SECRET=vendorbridge-secret-key
-PORT=5000
